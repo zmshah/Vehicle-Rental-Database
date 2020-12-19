@@ -1,0 +1,588 @@
+USE master
+
+/******  Database  Rental_Cars     ******/
+IF DB_ID('rental_cars') IS NOT NULL
+	DROP DATABASE rental_cars
+GO
+
+CREATE DATABASE rental_cars
+GO 
+
+USE rental_cars
+GO
+
+--------------------------
+-- Create Table Customer
+--------------------------
+
+CREATE TABLE Customer 
+(
+  Customer_Id       Int           NOT NULL ,
+  Customer_FName    Varchar(50)   NOT NULL ,
+  Customer_LName    VarChar(50)   NOT NULL ,
+  Customer_DOB      Date          NOT NULL ,
+  Customer_Street   Varchar(50)   NOT NULL ,
+  Customer_City     Varchar(50)   NOT NULL ,
+  Customer_State    Varchar(50)   NOT NULL ,
+  Customer_Zip_Code Int           NOT NULL ,
+  Customer_Phone    Varchar(50)   NULL ,
+  Cusomer_Email     Varchar(50)   NULL ,
+  License_Number    Varchar(50)   NOT NULL 
+  
+  );
+ 
+--------------------------
+-- Create Table License
+--------------------------
+CREATE TABLE License 
+(
+  License_Number    Varchar(50)   NOT NULL ,
+  License_Validity  DATE    NULL 
+  );
+  
+--------------------------
+-- Create Table Card_Detail
+--------------------------
+
+CREATE TABLE Card_Detail 
+(
+  Card_ID               Varchar(20)   NOT NULL ,
+  Card_Number           Bigint        NOT NULL ,
+  Card_Type             VarChar(20)   NOT NULL ,
+  Card_Expiration_Date  Date          NOT NULL ,
+  Customer_Id           Int           NOT NULL 
+  );
+
+--------------------------
+-- Create Table Rental
+--------------------------
+
+
+CREATE TABLE Rental 
+(
+  Rental_ID                  Int          NOT NULL ,
+  Rental_Pickup_Date         Date         NOT NULL ,
+  Rental_Dropoff_Date        Date         NOT NULL ,
+  Rental_Pickup_Time         Time         NULL,
+  Rental_Dropoff_Time        Time         NULL,
+  Pickup_Mileage             Int          NULL,
+  Dropoff_Mileage            Int          NULL,
+  Rental_Car_ReturnTanklevel  Varchar(10)      NULL,
+  Rental_Deposit_Paid_Status VarChar (10)     NULL,
+  Rental_Tax                 Float        NULL,
+  Rental_Days                Int          NULL ,
+  Rental_Charge              Int          NULL ,
+  Pickup_Location_ID         Int          NOT NULL,
+  Dropoff_Location_ID        Int          NOT NULL,
+  Customer_Id                Int          NOT NULL ,
+  Vehicle_ID                 VARCHAR(50)  NOT NULL ,
+  Insurance_ID               Int          NOT NULL
+  
+  );
+  
+--------------------------
+-- Create Table Insurance
+--------------------------
+
+CREATE TABLE Insurance
+(
+  Insurance_ID             Int          NOT NULL ,
+  Insurance_By             Varchar(50)  NOT NULL ,
+  Insurance_Type           Varchar(50)  NULL ,
+  Insurance_Perday_Rate    Float        NULL 
+ 
+);
+
+
+
+
+--------------------------
+-- Create TABLE Deposit
+--------------------------
+
+CREATE TABLE Deposit 
+(
+  Deposit_ID            Int            NOT NULL ,
+  Deposit_Amount        Float          NOT NULL ,
+  Card_id               varchar(20)    NOT NULL,
+  Rental_ID             Int            NOT NULL 
+  );
+  
+  
+--------------------------
+-- Create TABLE Invoice
+--------------------------
+
+CREATE TABLE Invoice 
+(
+  Invoice_Number               Int        NOT NULL ,
+  Total_Charge_Incx_Tax        Float      NULL ,
+  Debit_Card_Total             Float      NULL ,
+  Credit_Card_Total            Float      NULL ,
+  Cash_Total                   Float      NULL ,
+  Payment_Status               Varchar(10) NULL ,
+  Payment_Date                 Date       NULL ,
+  Rental_ID                    Int        NOT NULL 
+  );
+  
+
+--------------------------
+-- Create TABLE Tax
+--------------------------
+
+CREATE TABLE Tax 
+(
+  Tax_ID       Int        NOT NULL ,
+  Tax_Rate     Float      NULL 
+  );
+  
+  --------------------------
+-- Create TABLE Location
+--------------------------
+
+CREATE TABLE Location 
+(
+  Location_ID       Int           NOT NULL ,
+  Location_Street   Varchar(50)   NOT NULL ,
+  Location_City     VarChar(50)   NOT NULL ,
+  Location_State    Varchar(50)   NOT NULL ,
+  Location_Zip_Code Int           NOT NULL ,
+  Location_Phone    VARCHAR(50)   NOT NULL ,
+  Location_Email    VARCHAR(50)   NULL ,
+  Tax_ID            Int           NOT NULL
+  );
+--------------------------
+-- Create TABLE Vehicle
+
+-------------------------
+
+CREATE TABLE Vehicle 
+(
+  Vehicle_ID              Varchar(50)  NOT NULL ,
+  Vehicle_Type            Varchar(50)  NOT NULL ,
+  Vehicle_Model           VarChar(50)  NOT NULL ,
+  Vehicle_Year            Varchar(50)  NOT NULL ,
+  Vehicle_Current_Mileage Int          NOT NULL ,
+  Vehicle_Rental_Status   VARCHAR(50)  NOT NULL ,
+  Vehicle_Number_Of_Seats Int          NOT NULL ,
+  Vehicle_Rental_Rate     Int          NOT NULL ,
+  Vehicle_Color           VARCHAR(20)  NOT NULL ,
+  Location_ID             Int          NOT NULL 
+  );
+ 
+
+----------------------
+-- Define clustered index 
+---------------------- 
+ CREATE CLUSTERED INDEX location_city_id  ON Location (Location_id ASC,Location_city ASC);
+
+  
+----------------------
+-- Define primary keys
+----------------------
+
+
+ ALTER TABLE Customer WITH NOCHECK ADD CONSTRAINT PK_Customer PRIMARY KEY CLUSTERED (Customer_Id);
+ ALTER TABLE License WITH NOCHECK ADD CONSTRAINT PK_License PRIMARY KEY CLUSTERED (License_Number);
+ ALTER TABLE Card_Detail WITH NOCHECK ADD CONSTRAINT PK_Card_Detail PRIMARY KEY CLUSTERED (Card_ID);
+ ALTER TABLE Insurance WITH NOCHECK ADD CONSTRAINT PK_Insurance PRIMARY KEY CLUSTERED (Insurance_ID);
+ ALTER TABLE Rental WITH NOCHECK ADD CONSTRAINT PK_Rental PRIMARY KEY CLUSTERED (Rental_ID);
+ ALTER TABLE Location WITH NOCHECK ADD CONSTRAINT PK_Location PRIMARY KEY  (Location_ID);
+ ALTER TABLE Deposit WITH NOCHECK ADD CONSTRAINT PK_Deposit PRIMARY KEY CLUSTERED (Deposit_ID);
+ ALTER TABLE Invoice WITH NOCHECK ADD CONSTRAINT PK_Invoice PRIMARY KEY CLUSTERED (Invoice_Number);
+ ALTER TABLE Tax WITH NOCHECK ADD CONSTRAINT PK_tax PRIMARY KEY CLUSTERED (Tax_ID);
+ ALTER TABLE Vehicle WITH NOCHECK ADD CONSTRAINT PK_Vehicle PRIMARY KEY CLUSTERED (Vehicle_ID);
+
+
+
+
+ 
+ 
+----------------------
+-- Define foreign keys
+----------------------
+
+ ALTER TABLE Customer ADD CONSTRAINT FK_Customer_Licence FOREIGN KEY (License_Number) REFERENCES License(License_Number);
+ ALTER TABLE Card_Detail ADD CONSTRAINT FK_Card_detail_Customer FOREIGN KEY (Customer_Id) REFERENCES Customer(Customer_Id);
+ ALTER TABLE Rental ADD CONSTRAINT FK_Rental_Customer FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID);
+ ALTER TABLE Rental ADD CONSTRAINT FK_Rental_Vehicle FOREIGN KEY (Vehicle_ID) REFERENCES Vehicle(Vehicle_ID);
+ ALTER TABLE Rental ADD CONSTRAINT FK_Rental_Insurance FOREIGN KEY (Insurance_ID) REFERENCES Insurance(Insurance_ID);
+ ALTER TABLE Rental ADD CONSTRAINT FK_Rental_Pickup_Location FOREIGN KEY (Pickup_Location_ID) REFERENCES Location(Location_ID);
+ ALTER TABLE Rental ADD CONSTRAINT FK_Rental_Dropoff_Location FOREIGN KEY (Dropoff_Location_ID) REFERENCES Location(Location_ID);
+ ALTER TABLE Deposit ADD CONSTRAINT FK_Rental_Deposit FOREIGN KEY (Rental_ID) REFERENCES Rental(Rental_ID);
+ ALTER TABLE Deposit ADD CONSTRAINT FK_Rental_Card FOREIGN KEY (Card_ID) REFERENCES Card_Detail(Card_ID);
+ ALTER TABLE Invoice ADD CONSTRAINT FK_Rental_Invoice FOREIGN KEY (Rental_ID) REFERENCES Rental(Rental_ID);
+ ALTER TABLE Location ADD CONSTRAINT FK_Location_Tax FOREIGN KEY (Tax_ID) REFERENCES Tax(Tax_ID);
+ ALTER TABLE Vehicle ADD CONSTRAINT FK_Vehicle_Location FOREIGN KEY (Location_ID) REFERENCES Location(Location_ID);
+
+
+
+
+
+
+
+------------------------
+-- Populate License table
+------------------------
+INSERT INTO License(License_Number,License_Validity)
+VALUES( 'F25592150094' ,'2022-12-22');
+INSERT INTO License(License_Number,License_Validity)
+VALUES( 'C25596150094' ,'2023-02-12');
+INSERT INTO License(License_Number,License_Validity)
+VALUES( 'R2YT2150 094' ,'2022-12-22');
+INSERT INTO License(License_Number,License_Validity)
+VALUES( 'F25576550094' ,'2022-2-13');
+INSERT INTO License(License_Number,License_Validity)
+VALUES( 'ABCG52150094' ,'2022-09-22');
+INSERT INTO License(License_Number,License_Validity)
+VALUES( 'F25592167543' ,'2025-11-08');
+INSERT INTO License(License_Number,License_Validity)
+VALUES( 'N25576535094' ,'2024-03-21');
+INSERT INTO License(License_Number,License_Validity)
+VALUES( 'AHYT6750094' ,'2024-07-14');
+INSERT INTO License(License_Number,License_Validity)
+VALUES( 'CHYN2150094' ,'2022-05-22');
+INSERT INTO License(License_Number,License_Validity)
+VALUES( '876FTYU5004' ,'2023-12-22');
+INSERT INTO License(License_Number,License_Validity)
+VALUES( 'TYRFUJ78094' ,'2025-07-22');
+INSERT INTO License(License_Number,License_Validity)
+VALUES( 'F255989UYTG' ,'2025-12-2');
+INSERT INTO License(License_Number,License_Validity)
+VALUES( 'F2567Y80094' ,'2021-09-30');
+INSERT INTO License(License_Number,License_Validity)
+VALUES( '59GT6750094' ,'2026-12-26');
+INSERT INTO License(License_Number,License_Validity)
+VALUES( '592TYHUJ154' ,'2022-05-12');
+
+
+---------------------------
+-- Populate Customer table
+---------------------------
+INSERT INTO Customer(Customer_Id, Customer_FName, Customer_LName,Customer_DOB,Customer_Street, Customer_City, Customer_State, Customer_Zip_Code, Customer_Phone,Cusomer_Email,License_Number)
+VALUES('1000001', 'Mathew','Elina','1990-11-11','123 Main Street', 'Mankato', 'Minnesota', '55435','5463765341','elina54@gmail.com','F25592150094');
+INSERT INTO Customer(Customer_Id, Customer_FName, Customer_LName,Customer_DOB, Customer_Street, Customer_City, Customer_State, Customer_Zip_Code, Customer_Phone,Cusomer_Email,License_Number)
+VALUES('1000002', 'Tommy','Haden','1991-09-08',  '500 Park Street', 'Edina', 'Minnesota', '55678','5463193412','Haden7yu@gmail.com','C25596150094');
+INSERT INTO Customer(Customer_Id, Customer_FName, Customer_LName,Customer_DOB,Customer_Street, Customer_City, Customer_State, Customer_Zip_Code, Customer_Phone,Cusomer_Email,License_Number)
+VALUES('1000003', 'Sam','Harris', '1980-03-15', '1000 5th Avenue', 'Richfield', 'Minnesota', '567897','546376654','harris78@gmail.com','R2YT2150 094');
+INSERT INTO Customer(Customer_Id, Customer_FName, Customer_LName,Customer_DOB, Customer_Street, Customer_City, Customer_State, Customer_Zip_Code, Customer_Phone,Cusomer_Email,License_Number)
+VALUES('1000004', 'Singh','Ravi', '1995-08-11','42 Galaxy Road', 'Plymoth', 'Minnesota', '675467','543376534','rrt56g@gmail.com','F25576550094');
+INSERT INTO Customer(Customer_Id, Customer_FName, Customer_LName,Customer_DOB, Customer_Street, Customer_City, Customer_State, Customer_Zip_Code, Customer_Phone,Cusomer_Email,License_Number)
+VALUES('1000005', 'Gopi','Krishna','1990-09-09', '1000 5th Lake', 'Minnepolis', 'Minnesota', '675789','612376534','gopi897y@gmail.com','ABCG52150094');
+INSERT INTO Customer(Customer_Id, Customer_FName, Customer_LName,Customer_DOB, Customer_Street, Customer_City, Customer_State, Customer_Zip_Code, Customer_Phone,Cusomer_Email,License_Number)
+VALUES('1000006', 'Zain', 'Tam','1995-06-11','1000 5th Ring', 'Minnepolis', 'Minnesota', '675789','612376534','tamr45@gmail.com','F25592167543');
+INSERT INTO Customer(Customer_Id, Customer_FName, Customer_LName,Customer_DOB, Customer_Street, Customer_City, Customer_State, Customer_Zip_Code, Customer_Phone,Cusomer_Email,License_Number)
+VALUES('1000007','Rohan','Lal','1989-11-11', '200 Maple Lane', 'Detroit', 'MI', '444434','645387534', 'rohan54@gmail.com','N25576535094');
+INSERT INTO Customer(Customer_Id, Customer_FName, Customer_LName,Customer_DOB, Customer_Street, Customer_City, Customer_State, Customer_Zip_Code, Customer_Phone,Cusomer_Email,License_Number)
+VALUES('1000008', 'Saba','Ibrahim','1991-08-13','333 South Lake Drive', 'Peoria', 'ohio', '433333','546319347','hytgr5@gmail.com','AHYT6750094');
+INSERT INTO Customer(Customer_Id, Customer_FName, Customer_LName,Customer_DOB, Customer_Street, Customer_City, Customer_State, Customer_Zip_Code, Customer_Phone,Cusomer_Email,License_Number)
+VALUES('1000009', 'Firdos','Khan','1997-11-09','829 Riverside Drive', 'Richfield', 'Florida', '343434','126376654','yhu78@gmail.com','CHYN2150094');
+INSERT INTO Customer(Customer_Id, Customer_FName, Customer_LName,Customer_DOB, Customer_Street, Customer_City, Customer_State, Customer_Zip_Code, Customer_Phone,Cusomer_Email,License_Number)
+VALUES('1000010', 'Fanita','Mer','1986-07-15', '1 Sunny Place', 'LasVegas', 'Nevada', '111227','678376534','fnt67@gmail.com','876FTYU5004');
+INSERT INTO Customer(Customer_Id, Customer_FName, Customer_LName,Customer_DOB, Customer_Street, Customer_City, Customer_State, Customer_Zip_Code, Customer_Phone,Cusomer_Email,License_Number)
+VALUES('1000011', 'Stephen','Kale','1988-01-01', '100 5th Long', 'Phoenix', 'Ariozona', '234789','612983534','kalleer@gmail.com','TYRFUJ78094');
+INSERT INTO Customer(Customer_Id, Customer_FName, Customer_LName,Customer_DOB, Customer_Street, Customer_City, Customer_State, Customer_Zip_Code, Customer_Phone,Cusomer_Email,License_Number)
+VALUES('1000012', 'Brock', 'Will','1994-01-22','1000 5th Tree', 'Peoria', 'illinois', '677769','612376098','borock6yw@gmail.com','F255989UYTG');
+INSERT INTO Customer(Customer_Id, Customer_FName, Customer_LName,Customer_DOB, Customer_Street, Customer_City, Customer_State, Customer_Zip_Code, Customer_Phone,Cusomer_Email,License_Number)
+VALUES('1000013', 'Nick', 'Snow','1990-05-11','10 5th Black', 'Chicago', 'illinois', '555789','985676534','nick89@gmail.com','F2567Y80094');
+INSERT INTO Customer(Customer_Id, Customer_FName, Customer_LName,Customer_DOB, Customer_Street, Customer_City, Customer_State, Customer_Zip_Code, Customer_Phone,Cusomer_Email,License_Number)
+VALUES('1000014', 'Rubina','Iqbal','1998-11-21','156 5th Red', 'Springfiled', 'Ohio', '675777','656786534','rubu776@gmail.com','59GT6750094');
+INSERT INTO Customer(Customer_Id, Customer_FName, Customer_LName,Customer_DOB, Customer_Street, Customer_City, Customer_State, Customer_Zip_Code, Customer_Phone,Cusomer_Email,License_Number)
+VALUES('1000015', 'Chan', 'Glow','1993-01-11','100 5th York', 'Bloomington', 'Wisconsin', '675569','618907534','glow23#@gmail.com','592TYHUJ154');
+
+
+------------------------
+-- Populate Card_Detail table
+------------------------
+
+INSERT INTO Card_Detail(Card_ID,Card_Number,Card_Type,Card_Expiration_Date,Customer_Id)
+VALUES( 'CA10001','5500000000000004','MasterCard','2022-12-22','1000001');
+INSERT INTO Card_Detail(Card_ID,Card_Number,Card_Type,Card_Expiration_Date,Customer_Id)
+VALUES( 'CA10002','4111111165411111','Visa','2022-12-22','1000002');
+INSERT INTO Card_Detail(Card_ID,Card_Number,Card_Type,Card_Expiration_Date,Customer_Id)
+VALUES( 'CA10003','4111111165411981','Visa','2022-12-22','1000003');
+INSERT INTO Card_Detail(Card_ID,Card_Number,Card_Type,Card_Expiration_Date,Customer_Id)
+VALUES( 'CA10004','5500777000000004','MasterCard','2022-12-22','1000004');
+INSERT INTO Card_Detail(Card_ID,Card_Number,Card_Type,Card_Expiration_Date,Customer_Id)
+VALUES( 'CA10005','4111211165411111','Visa','2022-12-22','1000005');
+INSERT INTO Card_Detail(Card_ID,Card_Number,Card_Type,Card_Expiration_Date,Customer_Id)
+VALUES( 'CA10006','5500000999900004','MasterCard','2022-12-22','1000006');
+INSERT INTO Card_Detail(Card_ID,Card_Number,Card_Type,Card_Expiration_Date,Customer_Id)
+VALUES( 'CA10007','5500005430000004','MasterCard','2022-12-22','1000007');
+INSERT INTO Card_Detail(Card_ID,Card_Number,Card_Type,Card_Expiration_Date,Customer_Id)
+VALUES( 'CA10008','340000000000009','American Express','2022-12-22','1000008');
+INSERT INTO Card_Detail(Card_ID,Card_Number,Card_Type,Card_Expiration_Date,Customer_Id)
+VALUES( 'CA10009','340000012300009','American Express','2022-12-22','1000009');
+INSERT INTO Card_Detail(Card_ID,Card_Number,Card_Type,Card_Expiration_Date,Customer_Id)
+VALUES( 'CA10010','5500000760000004','MasterCard','2022-12-22','1000010');
+INSERT INTO Card_Detail(Card_ID,Card_Number,Card_Type,Card_Expiration_Date,Customer_Id)
+VALUES( 'CA10011','340000012309879','American Express','2022-12-22','1000011');
+INSERT INTO Card_Detail(Card_ID,Card_Number,Card_Type,Card_Expiration_Date,Customer_Id)
+VALUES( 'CA10012','5500000000012004','MasterCard','2022-12-22','1000012');
+INSERT INTO Card_Detail(Card_ID,Card_Number,Card_Type,Card_Expiration_Date,Customer_Id)
+VALUES( 'CA10013','5519800000000004','MasterCard','2022-12-22','1000013');
+INSERT INTO Card_Detail(Card_ID,Card_Number,Card_Type,Card_Expiration_Date,Customer_Id)
+VALUES( 'CA10014','5500000005555004','MasterCard','2022-12-22','1000014');
+INSERT INTO Card_Detail(Card_ID,Card_Number,Card_Type,Card_Expiration_Date,Customer_Id)
+VALUES( 'CA10015','5501110000000004','MasterCard','2022-12-22','1000015');
+
+
+------------------------
+-- Populate Tax table
+---------------------------
+INSERT INTO Tax(Tax_Id, Tax_Rate)
+VALUES('300010', '7');
+INSERT INTO Tax(Tax_Id, Tax_Rate)
+VALUES('300011', '9');
+INSERT INTO Tax(Tax_Id, Tax_Rate)
+VALUES('300012', '11');
+INSERT INTO Tax(Tax_Id, Tax_Rate)
+VALUES('300013', '12');
+INSERT INTO Tax(Tax_Id, Tax_Rate)
+VALUES('300014', '6.5');
+INSERT INTO Tax(Tax_Id, Tax_Rate)
+VALUES('300015', '6.9');
+------------------------
+------------------------
+-- Populate Location  table
+------------------------
+
+INSERT INTO Location(Location_Id, Location_Street, Location_City, Location_State, Location_Zip_Code, Location_Phone,Location_Email,Tax_id)
+VALUES('100010', '135 Hoffman Drive', 'Mankato', 'Minnesota', '55435','5074239870','customer.mankato@AARetal.com','300010');
+INSERT INTO Location(Location_Id, Location_Street, Location_City, Location_State, Location_Zip_Code, Location_Phone,Location_Email,Tax_id)
+VALUES('100011', '123 15th street', 'Apply Valley', 'Minnesota', '55124','5075469087','customer.applevalley@AARetal.com','300010');
+INSERT INTO Location(Location_Id, Location_Street, Location_City, Location_State, Location_Zip_Code, Location_Phone,Location_Email,Tax_id)
+VALUES('100012', '760 willowbrook street', 'Saint Paul', 'Minnesota', '55075','6129004592','customer.saintpaul@AARetal.com','300010');
+INSERT INTO Location(Location_Id, Location_Street, Location_City, Location_State, Location_Zip_Code, Location_Phone,Location_Email,Tax_id)
+VALUES('100013', '233 12th street', 'Burnsville', 'Minnesota', '55306','6129887605','customer.burnsville@AARetal.com','300010');
+INSERT INTO Location(Location_Id, Location_Street, Location_City, Location_State, Location_Zip_Code, Location_Phone,Location_Email,Tax_id)
+VALUES('100014', '120 1st street', 'Shakopee', 'Minnesota', '55379','6123458760','customer.shakopee@AARetal.com','300010');
+INSERT INTO Location(Location_Id, Location_Street, Location_City, Location_State, Location_Zip_Code, Location_Phone,Location_Email,Tax_id)
+VALUES('100015', '783 18th street', 'Rochester', 'Minnesota', '55902','5078921235','customer.rochester@AARetal.com','300010');
+INSERT INTO Location(Location_Id, Location_Street, Location_City, Location_State, Location_Zip_Code, Location_Phone,Location_Email,Tax_id)
+VALUES('100016', '111 18th street', 'Delta', 'Wisconsin', '55977','5078921235','customer.delta@AARetal@AARetal.com','300011');
+INSERT INTO Location(Location_Id, Location_Street, Location_City, Location_State, Location_Zip_Code, Location_Phone,Location_Email,Tax_id)
+VALUES('100017', '89 18th street', 'Star', 'Florida', '12377','5072321235','customer.star@AARetal.com','300013');
+
+
+------------------------
+-- Populate Insurance  table
+------------------------
+
+INSERT INTO Insurance(Insurance_ID, Insurance_By, Insurance_Type, Insurance_Perday_Rate)
+VALUES(1001, 'Self','', 0);
+INSERT INTO Insurance(Insurance_ID, Insurance_By, Insurance_Type, Insurance_Perday_Rate)
+VALUES(1002, 'Car Rental','Basic', 8);
+INSERT INTO Insurance(Insurance_ID, Insurance_By, Insurance_Type, Insurance_Perday_Rate)
+VALUES(1003, 'Car Rental','Full Coverage', 15);
+
+
+------------------------
+-- Populate Vehicle table
+------------------------
+
+
+INSERT INTO Vehicle(Vehicle_ID,Vehicle_Type,Vehicle_Model,Vehicle_Year,Vehicle_Current_Mileage,Vehicle_Rental_Status,Vehicle_Number_Of_Seats,Vehicle_Rental_Rate,Vehicle_Color,Location_ID)
+VALUES('237456', 'SUV', 'Toyota', '2009', 12838, 'Not Rented', 4, 35.6, 'Blue', '100010');
+INSERT INTO Vehicle(Vehicle_ID,Vehicle_Type,Vehicle_Model,Vehicle_Year,Vehicle_Current_Mileage,Vehicle_Rental_Status,Vehicle_Number_Of_Seats,Vehicle_Rental_Rate,Vehicle_Color,Location_ID)
+VALUES('345456', 'Truck', 'Suzuki', '2012', 44838, 'Rented', 6, 40, 'Blue', '100011');
+INSERT INTO Vehicle(Vehicle_ID,Vehicle_Type,Vehicle_Model,Vehicle_Year,Vehicle_Current_Mileage,Vehicle_Rental_Status,Vehicle_Number_Of_Seats,Vehicle_Rental_Rate,Vehicle_Color,Location_ID)
+VALUES('456456', 'Sedan', 'BMW', '2018', 2000, 'Rented', 4, 41, 'Red', '100012');
+INSERT INTO Vehicle(Vehicle_ID,Vehicle_Type,Vehicle_Model,Vehicle_Year,Vehicle_Current_Mileage,Vehicle_Rental_Status,Vehicle_Number_Of_Seats,Vehicle_Rental_Rate,Vehicle_Color,Location_ID)
+VALUES('234586', 'SUV', 'Toyota', '2009', 5838, 'Rented', 4, 35.6, 'White', '100010');
+INSERT INTO Vehicle(Vehicle_ID,Vehicle_Type,Vehicle_Model,Vehicle_Year,Vehicle_Current_Mileage,Vehicle_Rental_Status,Vehicle_Number_Of_Seats,Vehicle_Rental_Rate,Vehicle_Color,Location_ID)
+VALUES('334889', 'Sedan', 'BMW', '2010', 29938, 'Rented', 4, 35, 'Pink', '100015');
+INSERT INTO Vehicle(Vehicle_ID,Vehicle_Type,Vehicle_Model,Vehicle_Year,Vehicle_Current_Mileage,Vehicle_Rental_Status,Vehicle_Number_Of_Seats,Vehicle_Rental_Rate,Vehicle_Color,Location_ID)
+VALUES('746456', 'SUV', 'Toyota', '2009', 12838, 'Not Rented', 4, 35.6, 'Black', '100010');
+INSERT INTO Vehicle(Vehicle_ID,Vehicle_Type,Vehicle_Model,Vehicle_Year,Vehicle_Current_Mileage,Vehicle_Rental_Status,Vehicle_Number_Of_Seats,Vehicle_Rental_Rate,Vehicle_Color,Location_ID)
+VALUES('934456', 'Truck', 'Suzuki', '2008', 55838, 'Rented', 6, 39, 'White', '100011');
+INSERT INTO Vehicle(Vehicle_ID,Vehicle_Type,Vehicle_Model,Vehicle_Year,Vehicle_Current_Mileage,Vehicle_Rental_Status,Vehicle_Number_Of_Seats,Vehicle_Rental_Rate,Vehicle_Color,Location_ID)
+VALUES('427426', 'Sedan', 'BMW', '2005', 45678, 'Rented', 4, 41, 'Orange', '100013');
+INSERT INTO Vehicle(Vehicle_ID,Vehicle_Type,Vehicle_Model,Vehicle_Year,Vehicle_Current_Mileage,Vehicle_Rental_Status,Vehicle_Number_Of_Seats,Vehicle_Rental_Rate,Vehicle_Color,Location_ID)
+VALUES('204876', 'SUV', 'Toyota', '2009', 5838, 'Not Rented', 4, 35.6, 'Red', '100012');
+INSERT INTO Vehicle(Vehicle_ID,Vehicle_Type,Vehicle_Model,Vehicle_Year,Vehicle_Current_Mileage,Vehicle_Rental_Status,Vehicle_Number_Of_Seats,Vehicle_Rental_Rate,Vehicle_Color,Location_ID)
+VALUES('286578', 'Sedan', 'BMW', '2010', 46238, 'Rented', 4, 35, 'Blue', '100014');
+INSERT INTO Vehicle(Vehicle_ID,Vehicle_Type,Vehicle_Model,Vehicle_Year,Vehicle_Current_Mileage,Vehicle_Rental_Status,Vehicle_Number_Of_Seats,Vehicle_Rental_Rate,Vehicle_Color,Location_ID)
+VALUES('453456', 'Hatchback', 'BMW', '2018', 20200, 'Rented', 4, 35, 'Red', '100012');
+INSERT INTO Vehicle(Vehicle_ID,Vehicle_Type,Vehicle_Model,Vehicle_Year,Vehicle_Current_Mileage,Vehicle_Rental_Status,Vehicle_Number_Of_Seats,Vehicle_Rental_Rate,Vehicle_Color,Location_ID)
+VALUES('888586', 'SUV', 'Toyota', '2009', 333238, 'Rented', 4, 35, 'White', '100010');
+INSERT INTO Vehicle(Vehicle_ID,Vehicle_Type,Vehicle_Model,Vehicle_Year,Vehicle_Current_Mileage,Vehicle_Rental_Status,Vehicle_Number_Of_Seats,Vehicle_Rental_Rate,Vehicle_Color,Location_ID)
+VALUES('111889', 'Hatchback', 'BMW', '2010', 33338, 'Rented', 4, 35, 'Pink', '100015');
+INSERT INTO Vehicle(Vehicle_ID,Vehicle_Type,Vehicle_Model,Vehicle_Year,Vehicle_Current_Mileage,Vehicle_Rental_Status,Vehicle_Number_Of_Seats,Vehicle_Rental_Rate,Vehicle_Color,Location_ID)
+VALUES('222456', 'SUV', 'Toyota', '2009', 123238, 'Not Rented', 4, 32, 'Black', '100010');
+INSERT INTO Vehicle(Vehicle_ID,Vehicle_Type,Vehicle_Model,Vehicle_Year,Vehicle_Current_Mileage,Vehicle_Rental_Status,Vehicle_Number_Of_Seats,Vehicle_Rental_Rate,Vehicle_Color,Location_ID)
+VALUES('777456', 'Truck', 'Suzuki', '2004', 55838, 'Rented', 6, 39, 'White', '100011');
+
+
+
+------------------------
+-- Populate Rental table
+------------------------
+
+INSERT INTO Rental(Rental_ID, Rental_Pickup_Date, Rental_Dropoff_Date, Rental_Pickup_Time, Rental_Dropoff_Time, Pickup_Mileage, Dropoff_Mileage, 
+Rental_Car_ReturnTankLevel, Rental_Deposit_Paid_Status, Rental_Tax, Rental_Days, Rental_Charge, Pickup_Location_ID, Dropoff_Location_ID, 
+Customer_Id, Vehicle_ID, Insurance_ID)
+VALUES('2000001', '2020-10-24', '2020-10-26', '10:00:00', '10:00:00', '12838', '12938', 'Full', 'Paid', '7', '2', '0', '100010', '100010', '1000001', '237456', '1001');
+
+INSERT INTO Rental(Rental_ID, Rental_Pickup_Date, Rental_Dropoff_Date, Rental_Pickup_Time, Rental_Dropoff_Time, Pickup_Mileage, Dropoff_Mileage, 
+Rental_Car_ReturnTankLevel, Rental_Deposit_Paid_Status, Rental_Tax, Rental_Days, Rental_Charge, Pickup_Location_ID, Dropoff_Location_ID, 
+Customer_Id, Vehicle_ID, Insurance_ID)
+VALUES('2000002', '2020-10-24', '2020-10-25', '10:00:00', '10:00:00', '44838', '44900', 'Full', 'Paid', '7', '1', '0', '100011', '100011', '1000002', '345456', '1002');
+
+INSERT INTO Rental(Rental_ID, Rental_Pickup_Date, Rental_Dropoff_Date, Rental_Pickup_Time, Rental_Dropoff_Time, Pickup_Mileage, Dropoff_Mileage, 
+Rental_Car_ReturnTankLevel, Rental_Deposit_Paid_Status, Rental_Tax, Rental_Days, Rental_Charge, Pickup_Location_ID, Dropoff_Location_ID, 
+Customer_Id, Vehicle_ID, Insurance_ID)
+VALUES('2000003', '2020-10-27', '2020-10-30', '10:00:00', '10:00:00', '2000', '2100', 'Half', 'Paid', '12', '3', '0', '100017', '100017', '1000003', '456456', '1003');
+
+INSERT INTO Rental(Rental_ID, Rental_Pickup_Date, Rental_Dropoff_Date, Rental_Pickup_Time, Rental_Dropoff_Time, Pickup_Mileage, Dropoff_Mileage, 
+Rental_Car_ReturnTankLevel, Rental_Deposit_Paid_Status, Rental_Tax, Rental_Days, Rental_Charge, Pickup_Location_ID, Dropoff_Location_ID, 
+Customer_Id, Vehicle_ID, Insurance_ID)
+VALUES('2000004', '2020-10-27', '2020-10-30', '10:00:00', '10:00:00', '5838', '5990', 'Full', 'Paid', '7', '3', '0', '100010', '100010', '1000004', '234586', '1001');
+
+INSERT INTO Rental(Rental_ID, Rental_Pickup_Date, Rental_Dropoff_Date, Rental_Pickup_Time, Rental_Dropoff_Time, Pickup_Mileage, Dropoff_Mileage, 
+Rental_Car_ReturnTankLevel, Rental_Deposit_Paid_Status, Rental_Tax, Rental_Days, Rental_Charge, Pickup_Location_ID, Dropoff_Location_ID, 
+Customer_Id, Vehicle_ID, Insurance_ID)
+VALUES('2000005', '2020-11-02', '2020-11-04', '10:00:00', '10:00:00', '29938', '30000', 'Half', 'Paid', '7', '3', '0', '100015', '100015', '1000005', '334889', '1002');
+
+INSERT INTO Rental(Rental_ID, Rental_Pickup_Date, Rental_Dropoff_Date, Rental_Pickup_Time, Rental_Dropoff_Time, Pickup_Mileage, Dropoff_Mileage, 
+Rental_Car_ReturnTankLevel, Rental_Deposit_Paid_Status, Rental_Tax, Rental_Days, Rental_Charge, Pickup_Location_ID, Dropoff_Location_ID, 
+Customer_Id, Vehicle_ID, Insurance_ID)
+VALUES('2000006', '2020-11-04', '2020-11-05', '10:00:00', '10:00:00', '12838', '12900', 'Empty', 'Paid', '7', '12', '0', '100017', '100017', '1000006', '746456', '1003');
+
+INSERT INTO Rental(Rental_ID, Rental_Pickup_Date, Rental_Dropoff_Date, Rental_Pickup_Time, Rental_Dropoff_Time, Pickup_Mileage, Dropoff_Mileage, 
+Rental_Car_ReturnTankLevel, Rental_Deposit_Paid_Status, Rental_Tax, Rental_Days, Rental_Charge, Pickup_Location_ID, Dropoff_Location_ID, 
+Customer_Id, Vehicle_ID, Insurance_ID)
+VALUES('2000007', '2020-11-04', '2020-11-06', '10:00:00', '10:00:00', '55838', '55900', 'Full', 'Paid', '7', '2', '0', '100011', '100011', '1000007', '934456', '1001');
+
+INSERT INTO Rental(Rental_ID, Rental_Pickup_Date, Rental_Dropoff_Date, Rental_Pickup_Time, Rental_Dropoff_Time, Pickup_Mileage, Dropoff_Mileage, 
+Rental_Car_ReturnTankLevel, Rental_Deposit_Paid_Status, Rental_Tax, Rental_Days, Rental_Charge, Pickup_Location_ID, Dropoff_Location_ID, 
+Customer_Id, Vehicle_ID, Insurance_ID)
+VALUES('2000008', '2020-11-05', '2020-11-10', '10:00:00', '10:00:00', '45678', '45900', 'Empty', 'Paid', '7', '5', '0', '100013', '100013', '1000008', '427426', '1002');
+
+INSERT INTO Rental(Rental_ID, Rental_Pickup_Date, Rental_Dropoff_Date, Rental_Pickup_Time, Rental_Dropoff_Time, Pickup_Mileage, Dropoff_Mileage, 
+Rental_Car_ReturnTankLevel, Rental_Deposit_Paid_Status, Rental_Tax, Rental_Days, Rental_Charge, Pickup_Location_ID, Dropoff_Location_ID, 
+Customer_Id, Vehicle_ID, Insurance_ID)
+VALUES('2000009', '2020-11-05', '2020-11-07', '10:00:00', '10:00:00', '5838', '5900', 'Full', 'Paid', '7', '2', '0', '100012', '100012', '1000009', '204876', '1003');
+
+INSERT INTO Rental(Rental_ID, Rental_Pickup_Date, Rental_Dropoff_Date, Rental_Pickup_Time, Rental_Dropoff_Time, Pickup_Mileage, Dropoff_Mileage, 
+Rental_Car_ReturnTankLevel, Rental_Deposit_Paid_Status, Rental_Tax, Rental_Days, Rental_Charge, Pickup_Location_ID, Dropoff_Location_ID, 
+Customer_Id, Vehicle_ID, Insurance_ID)
+VALUES('2000010', '2020-11-06', '2020-11-07', '10:00:00', '10:00:00', '46238', '46280', 'Full', 'Paid', '7', '1', '0', '100014', '100014', '1000010', '286578', '1001');
+
+INSERT INTO Rental(Rental_ID, Rental_Pickup_Date, Rental_Dropoff_Date, Rental_Pickup_Time, Rental_Dropoff_Time, Pickup_Mileage, Dropoff_Mileage, 
+Rental_Car_ReturnTankLevel, Rental_Deposit_Paid_Status, Rental_Tax, Rental_Days, Rental_Charge, Pickup_Location_ID, Dropoff_Location_ID, 
+Customer_Id, Vehicle_ID, Insurance_ID)
+VALUES('2000011', '2020-11-08', '2020-11-12', '10:00:00', '10:00:00', '20200', '20400', 'Empty', 'Paid', '7', '4', '0', '100012', '100012', '1000011', '453456', '1002');
+
+INSERT INTO Rental(Rental_ID, Rental_Pickup_Date, Rental_Dropoff_Date, Rental_Pickup_Time, Rental_Dropoff_Time, Pickup_Mileage, Dropoff_Mileage, 
+Rental_Car_ReturnTankLevel, Rental_Deposit_Paid_Status, Rental_Tax, Rental_Days, Rental_Charge, Pickup_Location_ID, Dropoff_Location_ID, 
+Customer_Id, Vehicle_ID, Insurance_ID)
+VALUES('2000012', '2020-11-11', '2020-11-12', '10:00:00', '10:00:00', '333238', '333288', 'Half', 'Paid', '9', '1', '0', '100016', '100016', '1000012', '888586', '1003');
+
+INSERT INTO Rental(Rental_ID, Rental_Pickup_Date, Rental_Dropoff_Date, Rental_Pickup_Time, Rental_Dropoff_Time, Pickup_Mileage, Dropoff_Mileage, 
+Rental_Car_ReturnTankLevel, Rental_Deposit_Paid_Status, Rental_Tax, Rental_Days, Rental_Charge, Pickup_Location_ID, Dropoff_Location_ID, 
+Customer_Id, Vehicle_ID, Insurance_ID)
+VALUES('2000013', '2020-11-13', '2020-11-15', '10:00:00', '10:00:00', '33338', '33438', 'Full', 'Paid', '7', '2', '0', '100015', '100015', '1000013', '111889', '1001');
+
+INSERT INTO Rental(Rental_ID, Rental_Pickup_Date, Rental_Dropoff_Date, Rental_Pickup_Time, Rental_Dropoff_Time, Pickup_Mileage, Dropoff_Mileage, 
+Rental_Car_ReturnTankLevel, Rental_Deposit_Paid_Status, Rental_Tax, Rental_Days, Rental_Charge, Pickup_Location_ID, Dropoff_Location_ID, 
+Customer_Id, Vehicle_ID, Insurance_ID)
+VALUES('2000014', '2020-11-13', '2020-11-15', '10:00:00', '10:00:00', '123238', '123298', 'Full', 'Paid', '9', '2', '0', '100016', '100016', '1000014', '222456', '1002');
+
+INSERT INTO Rental(Rental_ID, Rental_Pickup_Date, Rental_Dropoff_Date, Rental_Pickup_Time, Rental_Dropoff_Time, Pickup_Mileage, Dropoff_Mileage, 
+Rental_Car_ReturnTankLevel, Rental_Deposit_Paid_Status, Rental_Tax, Rental_Days, Rental_Charge, Pickup_Location_ID, Dropoff_Location_ID, 
+Customer_Id, Vehicle_ID, Insurance_ID)
+VALUES('2000015', '2020-11-14', '2020-11-16', '10:00:00', '10:00:00', '55838', '55838', 'Full', 'Paid', '7', '2', '0', '100011', '100011', '1000015', '777456', '1003');
+ 
+ INSERT INTO Rental(Rental_ID, Rental_Pickup_Date, Rental_Dropoff_Date, Rental_Pickup_Time, Rental_Dropoff_Time, Pickup_Mileage, Dropoff_Mileage, 
+Rental_Car_ReturnTankLevel, Rental_Deposit_Paid_Status, Rental_Tax, Rental_Days, Rental_Charge, Pickup_Location_ID, Dropoff_Location_ID, 
+Customer_Id, Vehicle_ID, Insurance_ID)
+VALUES('2000016', '2020-11-14', '2020-11-16', '10:00:00', '10:00:00', '1000', '1200', 'Half', 'Paid', '7', '2', '0', '100013', '100013', '1000014', '777456', '1003');
+ 
+ 
+INSERT INTO Rental(Rental_ID, Rental_Pickup_Date, Rental_Dropoff_Date, Rental_Pickup_Time, Rental_Dropoff_Time, Pickup_Mileage, Dropoff_Mileage, 
+Rental_Car_ReturnTankLevel, Rental_Deposit_Paid_Status, Rental_Tax, Rental_Days, Rental_Charge, Pickup_Location_ID, Dropoff_Location_ID, 
+Customer_Id, Vehicle_ID, Insurance_ID)
+VALUES('2000017', '2020-11-19', '2020-11-23', '10:00:00', '10:00:00', '6000', '6500', 'Half', 'Paid', '9', '2', '0', '100016','100016', '1000015', '204876', '1003');
+ 
+ INSERT INTO Rental(Rental_ID, Rental_Pickup_Date, Rental_Dropoff_Date, Rental_Pickup_Time, Rental_Dropoff_Time, Pickup_Mileage, Dropoff_Mileage, 
+Rental_Car_ReturnTankLevel, Rental_Deposit_Paid_Status, Rental_Tax, Rental_Days, Rental_Charge, Pickup_Location_ID, Dropoff_Location_ID, 
+Customer_Id, Vehicle_ID, Insurance_ID)
+VALUES('2000018', '2020-06-14', '2020-06-16', '10:00:00', '10:00:00', '7000', '7700', 'Full', 'Paid', '9', '2', '0', '100016','100016' , '1000015', '204876', '1003');
+ 
+ ------------------------
+-- Populate Invoice table
+------------------------
+  
+INSERT INTO Invoice(Invoice_Number, Total_Charge_Incx_Tax, Debit_Card_Total, Credit_Card_Total, Cash_Total,Payment_Status,Payment_Date,Rental_ID)
+VALUES('7000001', '0.0', '0.0', '0.0', '0.0','PAID','2020-10-26','2000001');
+INSERT INTO Invoice(Invoice_Number, Total_Charge_Incx_Tax, Debit_Card_Total, Credit_Card_Total, Cash_Total,Payment_Status,Payment_Date,Rental_ID)
+VALUES('7000002', '0.0', '0.0', '0.0', '0.0','PAID','2020-10-25','2000002');
+INSERT INTO Invoice(Invoice_Number, Total_Charge_Incx_Tax, Debit_Card_Total, Credit_Card_Total, Cash_Total,Payment_Status,Payment_Date,Rental_ID)
+VALUES('7000003', '0.0', '0.0', '0.0', '0.0','PAID','2020-10-30','2000003');
+INSERT INTO Invoice(Invoice_Number, Total_Charge_Incx_Tax, Debit_Card_Total, Credit_Card_Total, Cash_Total,Payment_Status,Payment_Date,Rental_ID)
+VALUES('7000004', '0.0', '0.0', '0.0', '0.0','PAID','2020-10-30','2000004');
+INSERT INTO Invoice(Invoice_Number, Total_Charge_Incx_Tax, Debit_Card_Total, Credit_Card_Total, Cash_Total,Payment_Status,Payment_Date,Rental_ID)
+VALUES('7000005', '0.0', '0.0', '0.0', '0.0','PAID','2020-11-04','2000005');
+INSERT INTO Invoice(Invoice_Number, Total_Charge_Incx_Tax, Debit_Card_Total, Credit_Card_Total, Cash_Total,Payment_Status,Payment_Date,Rental_ID)
+VALUES('7000006', '0.0', '0.0', '0.0', '0.0','PAID','2020-11-05','2000006');
+INSERT INTO Invoice(Invoice_Number, Total_Charge_Incx_Tax, Debit_Card_Total, Credit_Card_Total, Cash_Total,Payment_Status,Payment_Date,Rental_ID)
+VALUES('7000007', '0.0', '0.0', '0.0', '0.0','PAID','2020-11-06','2000007');
+INSERT INTO Invoice(Invoice_Number, Total_Charge_Incx_Tax, Debit_Card_Total, Credit_Card_Total, Cash_Total,Payment_Status,Payment_Date,Rental_ID)
+VALUES('7000008', '0.0', '0.0', '0.0', '0.0','PAID','2020-11-10','2000008');
+INSERT INTO Invoice(Invoice_Number, Total_Charge_Incx_Tax, Debit_Card_Total, Credit_Card_Total, Cash_Total,Payment_Status,Payment_Date,Rental_ID)
+VALUES('7000009', '0.0', '0.0', '0.0', '0.0','PAID','2020-11-07','2000009');
+INSERT INTO Invoice(Invoice_Number, Total_Charge_Incx_Tax, Debit_Card_Total, Credit_Card_Total, Cash_Total,Payment_Status,Payment_Date,Rental_ID)
+VALUES('7000010', '0.0', '0.0', '0.0', '0.0','PAID','2020-11-07','2000010');
+INSERT INTO Invoice(Invoice_Number, Total_Charge_Incx_Tax, Debit_Card_Total, Credit_Card_Total, Cash_Total,Payment_Status,Payment_Date,Rental_ID)
+VALUES('7000011', '0.0', '0.0', '0.0', '0.0','PAID','2020-11-12','2000011');
+INSERT INTO Invoice(Invoice_Number, Total_Charge_Incx_Tax, Debit_Card_Total, Credit_Card_Total, Cash_Total,Payment_Status,Payment_Date,Rental_ID)
+VALUES('7000012', '0.0', '0.0', '0.0', '0.0','PAID','2020-11-12','2000012');
+INSERT INTO Invoice(Invoice_Number, Total_Charge_Incx_Tax, Debit_Card_Total, Credit_Card_Total, Cash_Total,Payment_Status,Payment_Date,Rental_ID)
+VALUES('7000013', '0.0', '0.0', '0.0', '0.0','PAID','2020-11-15','2000013');
+INSERT INTO Invoice(Invoice_Number, Total_Charge_Incx_Tax, Debit_Card_Total, Credit_Card_Total, Cash_Total,Payment_Status,Payment_Date,Rental_ID)
+VALUES('7000014', '0.0', '0.0', '0.0', '0.0','PAID','2020-11-15','2000014');
+INSERT INTO Invoice(Invoice_Number, Total_Charge_Incx_Tax, Debit_Card_Total, Credit_Card_Total, Cash_Total,Payment_Status,Payment_Date,Rental_ID)
+VALUES('7000015', '0.0', '0.0', '0.0', '0.0','PAID','2020-11-16','2000015');
+INSERT INTO Invoice(Invoice_Number, Total_Charge_Incx_Tax, Debit_Card_Total, Credit_Card_Total, Cash_Total,Payment_Status,Payment_Date,Rental_ID)
+VALUES('7000016', '0.0', '0.0', '0.0', '0.0','PAID','2020-12-16','2000016');
+INSERT INTO Invoice(Invoice_Number, Total_Charge_Incx_Tax, Debit_Card_Total, Credit_Card_Total, Cash_Total,Payment_Status,Payment_Date,Rental_ID)
+VALUES('7000017', '0.0', '0.0', '0.0', '0.0','PAID','2020-12-16','2000017');
+INSERT INTO Invoice(Invoice_Number, Total_Charge_Incx_Tax, Debit_Card_Total, Credit_Card_Total, Cash_Total,Payment_Status,Payment_Date,Rental_ID)
+VALUES('7000018', '0.0', '0.0', '0.0', '0.0','PAID','2020-06-16','2000018');
+
+  
+------------------------
+-- Populate Deposit table
+------------------------
+
+INSERT INTO Deposit(Deposit_ID,Deposit_Amount,Card_id,Rental_id)
+VALUES( '5000001','50','CA10001','2000001');
+INSERT INTO Deposit(Deposit_ID,Deposit_Amount,Card_id,Rental_id)
+VALUES( '5000002','50','CA10002','2000002');
+INSERT INTO Deposit(Deposit_ID,Deposit_Amount,Card_id,Rental_id)
+VALUES( '5000003','100','CA10003','2000003');
+INSERT INTO Deposit(Deposit_ID,Deposit_Amount,Card_id,Rental_id)
+VALUES( '5000004','50','CA10004','2000004');
+INSERT INTO Deposit(Deposit_ID,Deposit_Amount,Card_id,Rental_id)
+VALUES( '5000005','50','CA10005','2000005');
+INSERT INTO Deposit(Deposit_ID,Deposit_Amount,Card_id,Rental_id)
+VALUES( '5000006','50','CA10006','2000006');
+INSERT INTO Deposit(Deposit_ID,Deposit_Amount,Card_id,Rental_id)
+VALUES( '5000007','50','CA10007','2000007');
+INSERT INTO Deposit(Deposit_ID,Deposit_Amount,Card_id,Rental_id)
+VALUES( '5000008','50','CA10008','2000008');
+INSERT INTO Deposit(Deposit_ID,Deposit_Amount,Card_id,Rental_id)
+VALUES( '5000009','50','CA10009','2000009');
+INSERT INTO Deposit(Deposit_ID,Deposit_Amount,Card_id,Rental_id)
+VALUES( '5000010','50','CA10010','2000010');
+INSERT INTO Deposit(Deposit_ID,Deposit_Amount,Card_id,Rental_id)
+VALUES( '5000011','50','CA10011','2000011');
+INSERT INTO Deposit(Deposit_ID,Deposit_Amount,Card_id,Rental_id)
+VALUES( '5000012','50','CA10012','2000012');
+INSERT INTO Deposit(Deposit_ID,Deposit_Amount,Card_id,Rental_id)
+VALUES( '5000013','50','CA10013','2000013');
+INSERT INTO Deposit(Deposit_ID,Deposit_Amount,Card_id,Rental_id)
+VALUES( '5000014','50','CA10014','2000014');
+INSERT INTO Deposit(Deposit_ID,Deposit_Amount,Card_id,Rental_id)
+VALUES( '5000015','50','CA10015','2000015');
