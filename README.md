@@ -5,6 +5,3 @@
 
 ![alt text](Images/RentalDatabase.png)
 
-![alt text](Images/Revenue.png)
-
-![alt text](Images/Vehicles.png)
